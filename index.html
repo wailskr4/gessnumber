@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the Number - Nesrine's Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .heart-beat {
+            animation: heartbeat 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+        .bounce-in {
+            animation: bounceIn 0.4s forwards;
+        }
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-highlight {
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 to-purple-50 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+    <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full border border-pink-100 smooth-transition hover:shadow-2xl">
+        <div class="text-center mb-8">
+            <div class="float inline-block mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-1">
+                Guess the Number
+            </h1>
+            <p class="text-gray-500">I'm thinking of a number between 1 and 20</p>
+        </div>
+        
+        <div class="flex flex-col items-center mb-8">
+            <div class="relative mb-6 w-full max-w-xs">
+                <input type="number" id="guessInput" min="1" max="20" 
+                       class="border-2 border-pink-200 rounded-xl px-6 py-4 text-center text-2xl font-bold w-full focus:outline-none focus:border-pink-400 smooth-transition bg-pink-50 text-pink-700">
+                <div id="inputIndicator" class="absolute -bottom-2 left-0 right-0 h-1.5 bg-pink-100 rounded-full overflow-hidden hidden">
+                    <div id="attemptBar" class="h-full bg-gradient-to-r from-pink-400 to-pink-500 smooth-transition"></div>
+                </div>
+            </div>
+            <button id="guessButton" 
+                    class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-xl smooth-transition shadow-md hover:shadow-lg active:scale-95 transform hover:-translate-y-0.5 text-lg w-full max-w-xs">
+                Guess
+            </button>
+        </div>
+        
+        <div id="messageContainer" class="min-h-20 mb-6 flex items-center justify-center px-2">
+            <div id="message" class="text-center text-lg font-medium px-5 py-3 rounded-xl w-full max-w-xs smooth-transition"></div>
+        </div>
+        
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div id="attempts" class="text-gray-600 font-medium flex items-center">
+                <span class="flex space-x-1 mr-2">
+                    <span class="text-pink-500">❤️</span>
+                    <span class="text-pink-500">❤️</span>
+                    <span class="text-pink-500">❤️</span>
+                    <span class="text-pink-500">❤️</span>
+                    <span class="text-pink-500">❤️</span>
+                </span>
+                <span>attempts left</span>
+            </div>
+            <div id="hint" class="text-sm text-gray-500 italic"></div>
+        </div>
+        
+        <button id="restartButton" 
+                class="bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium py-3 px-6 rounded-xl smooth-transition w-full hidden items-center justify-center space-x-2 border border-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            <span>Play Again</span>
+        </button>
+    </div>
+
+    <script>
+        // Game state
+        let secretNumber = Math.floor(Math.random() * 20) + 1;
+        let attemptsLeft = 5;
+        let previousGuesses = [];
+        
+        // DOM elements
+        const guessInput = document.getElementById('guessInput');
+        const guessButton = document.getElementById('guessButton');
+        const message = document.getElementById('message');
+        const messageContainer = document.getElementById('messageContainer');
+        const attemptsDisplay = document.getElementById('attempts');
+        const restartButton = document.getElementById('restartButton');
+        const inputIndicator = document.getElementById('inputIndicator');
+        const attemptBar = document.getElementById('attemptBar');
+        const hint = document.getElementById('hint');
+        const hearts = attemptsDisplay.querySelectorAll('span span');
+        
+        console.log("Secret number:", secretNumber); // For debugging (remove in production)
+
+        // Event listeners
+        guessButton.addEventListener('click', checkGuess);
+        restartButton.addEventListener('click', restartGame);
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+        guessInput.addEventListener('focus', function() {
+            inputIndicator.classList.remove('hidden');
+            this.classList.add('input-highlight');
+        });
+        guessInput.addEventListener('blur', function() {
+            this.classList.remove('input-highlight');
+        });
+
+        function checkGuess() {
+            const userGuess = parseInt(guessInput.value);
+            
+            // Validate input
+            if (isNaN(userGuess)) {
+                showMessage('Please enter a number', 'error');
+                shakeInput();
+                return;
+            }
+            
+            if (userGuess < 1 || userGuess > 20) {
+                showMessage('Number must be between 1-20', 'error');
+                shakeInput();
+                return;
+            }
+            
+            if (previousGuesses.includes(userGuess)) {
+                showMessage(`You already guessed ${userGuess}!`, 'error');
+                shakeInput();
+                guessInput.value = '';
+                return;
+            }
+            
+            // Process valid guess
+            previousGuesses.push(userGuess);
+            attemptsLeft--;
+            updateAttemptsDisplay();
+            
+            // Check guess against secret number
+            if (userGuess === secretNumber) {
+                showMessage(`Amazing baby Nesrine, I love you! <span class="heart-beat">💖</span>`, 'success', true);
+                confettiEffect();
+                gameOver(true);
+            } else if (attemptsLeft === 0) {
+                showMessage(`Game over! The number was ${secretNumber} honey `, 'error');
+                gameOver(false);
+            } else {
+                const difference = Math.abs(userGuess - secretNumber);
+                
+                // Provide feedback
+                if (difference <= 2) {
+                    showMessage('Close honey!', 'warning');
+                    hint.textContent = difference === 1 ? 'Just 1 away!' : 'Almost there!';
+                } else if (userGuess > secretNumber) {
+                    showMessage('Too big, smaller honey!', 'info');
+                    hint.textContent = 'Try a lower number';
+                } else {
+                    showMessage('Too small, bigger honey!', 'info');
+                    hint.textContent = 'Try a higher number';
+                }
+            }
+            
+            // Reset input for next guess
+            guessInput.value = '';
+            guessInput.focus();
+        }
+        
+        function shakeInput() {
+            guessInput.classList.add('animate__animated', 'animate__headShake');
+            setTimeout(() => {
+                guessInput.classList.remove('animate__animated', 'animate__headShake');
+            }, 1000);
+        }
+        
+        function showMessage(text, type, heartEffect = false) {
+            message.innerHTML = text;
+            message.className = 'text-center text-lg font-medium px-5 py-3 rounded-xl w-full max-w-xs smooth-transition bounce-in';
+            
+            // Reset container classes
+            messageContainer.className = 'min-h-20 mb-6 flex items-center justify-center px-2';
+            
+            // Apply appropriate styling based on message type
+            if (type === 'success') {
+                message.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-100');
+                messageContainer.classList.add('animate__animated', 'animate__tada');
+            } else if (type === 'error') {
+                message.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-100');
+                messageContainer.classList.add('animate__animated', 'animate__shakeX');
+            } else if (type === 'warning') {
+                message.classList.add('bg-yellow-50', 'text-yellow-700', 'border', 'border-yellow-100');
+            } else {
+                message.classList.add('bg-blue-50', 'text-blue-700', 'border', 'border-blue-100');
+            }
+        }
+        
+        function updateAttemptsDisplay() {
+            // Update hearts display
+            hearts.forEach((heart, index) => {
+                heart.style.visibility = index < 4 ? 'visible' : 'hidden';
+                if (index >= attemptsLeft) {
+                    heart.classList.add('opacity-30');
+                } else {
+                    heart.classList.remove('opacity-30');
+                }
+            });
+            
+            // Update progress bar
+            attemptBar.style.width = `${(attemptsLeft / 4) * 100}%`;
+            
+            // Change color when low on attempts
+            if (attemptsLeft <= 1) {
+                attemptBar.classList.add('from-red-400', 'to-red-500');
+                attemptBar.classList.remove('from-pink-400', 'to-pink-500');
+                attemptsDisplay.classList.add('pulse');
+            } else {
+                attemptBar.classList.add('from-pink-400', 'to-pink-500');
+                attemptBar.classList.remove('from-red-400', 'to-red-500');
+                attemptsDisplay.classList.remove('pulse');
+            }
+        }
+        
+        function gameOver(win) {
+            guessInput.disabled = true;
+            guessButton.disabled = true;
+            restartButton.classList.remove('hidden');
+            
+            // Style based on win/lose
+            if (win) {
+                guessInput.classList.add('border-green-400', 'bg-green-50');
+                guessButton.classList.add('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+            } else {
+                guessInput.classList.add('border-red-300', 'bg-red-50');
+                guessButton.classList.add('from-red-500', 'to-red-600', 'hover:from-red-600', 'hover:to-red-700');
+            }
+        }
+        
+        function restartGame() {
+            // Reset game state
+            secretNumber = Math.floor(Math.random() * 20) + 1;
+            attemptsLeft = 4;
+            previousGuesses = [];
+            
+            console.log("New secret number:", secretNumber); // For debugging (remove in production)
+            
+            // Enable controls
+            guessInput.disabled = false;
+            guessButton.disabled = false;
+            guessInput.value = '';
+            guessInput.focus();
+            
+            // Clear messages
+            message.textContent = '';
+            hint.textContent = '';
+            
+            // Reset hearts display
+            hearts.forEach(heart => {
+                heart.classList.remove('opacity-30');
+                heart.style.visibility = 'visible';
+            });
+            attemptsDisplay.classList.remove('pulse');
+            
+            // Reset styles
+            guessInput.className = 'border-2 border-pink-200 rounded-xl px-6 py-4 text-center text-2xl font-bold w-full focus:outline-none focus:border-pink-400 smooth-transition bg-pink-50 text-pink-700';
+            guessButton.className = 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-xl smooth-transition shadow-md hover:shadow-lg active:scale-95 transform hover:-translate-y-0.5 text-lg w-full max-w-xs';
+            
+            // Hide restart button
+            restartButton.classList.add('hidden');
+            inputIndicator.classList.add('hidden');
+            
+            // Reset progress bar
+            attemptBar.style.width = '100%';
+            attemptBar.classList.add('from-pink-400', 'to-pink-500');
+            attemptBar.classList.remove('from-red-400', 'to-red-500');
+        }
+        
+        function confettiEffect() {
+            const colors = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
+            const emojis = ['💖', '✨', '🎉', '🌟', '🥳'];
+            
+            for (let i = 0; i < 75; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'fixed rounded-full flex items-center justify-center text-xl';
+                confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.top = '-20px';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                confetti.style.zIndex = '1000';
+                confetti.textContent = Math.random() > 0.5 ? emojis[Math.floor(Math.random() * emojis.length)] : '';
+                
+                if (!confetti.textContent) {
+                    confetti.style.width = `${Math.random() * 8 + 4}px`;
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                document.body.appendChild(confetti);
+                
+                const animationDuration = 2000 + Math.random() * 3000;
+                const animation = confetti.animate([
+                    { top: '-20px', opacity: 1, transform: `rotate(0deg) translateX(${Math.random() * 20 - 10}px)` },
+                    { top: `${Math.random() * 100 + 50}vh`, opacity: 0, transform: `rotate(${Math.random() * 360}deg) translateX(${Math.random() * 40 - 20}px)` }
+                ], {
+                    duration: animationDuration,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                });
+                
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+    </script>
+</body>
+</html>
